@@ -4,9 +4,11 @@ NOID-mint Python Package
 ```
 create directory at command line
 
-setup virtual environment: `python3 -m venv ENV`
+cd to that directory
 
-activate the environment: `source ENV/bin/activate`
+setup virtual environment for Python 2.7: 
+
+activate the environment: 
 
 git clone https://github.com/aprigge/NOID-mint.git
 
@@ -24,10 +26,10 @@ in command line install requirements 'pip install -r requirements.txt'
 
 
 
-run 'python noid_ark.py' in terminal. you will be prompted for:
-1. the file path to the csv input file
-2. the parent ark
-3. the name of the output file (needs to end in .csv)
+run 'python scriptname' in terminal. you will be prompted for:
+1. The directory name for the files
+2. EZID login credientials
+3. The ARK shoulder
 
 the parent ark input and new item ark will be appended to the last two columns of the output csv file
 ```
