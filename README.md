@@ -2,21 +2,26 @@ NOID-mint Python Package
 
 ## Installation
 ```
-create directory at command line
+Make a new directory on your computer
+$ mkdir manuscript_arks
+Navigate into that directory
+$ cd manuscript_arks
+Clone the github repo above into that directory
+$ git clone https://github.com/aprigge/NOID-mint
+Use pip2 to create a virtual environment
+$ pip2 install virtualenv
+$ virtualenv venv
+Activate the virtual environment
+$ source venv/bin/activate
+Confirm the python version is 2.7 by running 
+$ python --version
+Navigate down into the NOID-mint directory
+$ cd NOID-mint
+Install the requirements
+$ pip2 install -r requirements.txt
+Setup the noid script
+Run $ python setup.py install
 
-cd to that directory
-
-setup virtual environment for Python 2.7: 
-
-activate the environment: 
-
-git clone https://github.com/aprigge/NOID-mint.git
-
-in command line change directory to new folder: 'cd NOID-mint'
-
-in command line 'python setup.py install'
-
-in command line install requirements 'pip install -r requirements.txt'
 
 ```
 
@@ -26,7 +31,7 @@ in command line install requirements 'pip install -r requirements.txt'
 
 
 
-run 'python scriptname' in terminal. you will be prompted for:
+run 'python mss_ark_noid.py' in terminal. you will be prompted for:
 1. The directory name for the files
 2. EZID login credientials
 3. The ARK shoulder
