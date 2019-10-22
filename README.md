@@ -34,10 +34,11 @@ NOID-mint Python Package
 ## Usage
 * Generate noid
 ```
-run 'python mss_ark_noid.py' in terminal. you will be prompted for:
+run 'python sinai_work_page_ark.py' in terminal. you will be prompted for:
 1. The directory name for the files
-2. EZID login credientials
+2. The path to the works.csv file
 3. The ARK shoulder
+4. EZID login credientials
 
 the parent ark input and new item ark will be appended to the last two columns of the output csv file
 ```
