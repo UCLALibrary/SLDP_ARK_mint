@@ -3,13 +3,7 @@ import os
 import subprocess
 import pandas as pd
 
-
-#creates a mappings file that provides metadata to EZID
-
-
 #creates a noid format file that suplies the parent ark for the NOID to be appended to
-
-
 
 def create_noid_yml(parent_ark):
 
@@ -17,6 +11,8 @@ def create_noid_yml(parent_ark):
     string = ['template: eeddeede \n',('scheme: ' + str(parent_ark[0:11])), ('\nnaa: ' + str(parent_ark[11:]))]
     for s in string:
         noid_file.write(s)
+
+#creates a mappings file that provides metadata to EZID
 
 def create_mappings():
 
@@ -26,15 +22,12 @@ def create_mappings():
     for s in string:
         mappings_file.write(s)
 
-#calls the EZID and NOID scripts based if the row is a Work or Page
-#open all csvs in the directory
 directory = raw_input('File directory:')
-ark_shoulder = raw_input('ARK shoulder:')
 works_file = raw_input('path to works.csv:')
+ark_shoulder = raw_input('ARK shoulder:')
 ezid_input = raw_input('EZID username and password:')
 
 ark_dict = {}
-
 parent_ark_list = []
 
 output_file = 'works_export.csv'
@@ -52,11 +45,9 @@ for row in works_cursor:
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
 
-data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
+data = pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
 data['Item Ark'] = parent_ark_list
 data.to_csv(path_or_buf=output_file, sep=',', na_rep='', float_format=None, index=False)
-
-
 
 for filename in os.listdir(directory):
     if '.csv' in filename:
@@ -71,11 +62,9 @@ for filename in os.listdir(directory):
                 source = row['Source']
                 if source in ark_dict.keys():
                     parent_ark = ark_dict[source]
-
                     create_noid_yml(parent_ark)
                     cmd = ['noid', '-f', 'Noid_test.yml']
                     item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-                        #   print(item_ark)
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
 
