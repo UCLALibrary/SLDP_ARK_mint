@@ -13,7 +13,6 @@ def create_noid_yml(parent_ark):
         noid_file.write(s)
 
 #creates a mappings file that provides metadata to EZID
-
 def create_mappings():
 
     title = row['Title']
@@ -23,14 +22,12 @@ def create_mappings():
         mappings_file.write(s)
 
 directory = raw_input('File directory:')
-works_file = raw_input('path to works.csv:')
+works_file = raw_input('Path to works.csv:')
 ark_shoulder = raw_input('ARK shoulder:')
 ezid_input = raw_input('EZID username and password:')
-
 ark_dict = {}
 parent_ark_list = []
-
-output_file = 'works_export.csv'
+output_file = 'works.csv'
 works_cursor = csv.DictReader(open(works_file),
     delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
@@ -45,14 +42,15 @@ for row in works_cursor:
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
 
-data = pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
-data['Item Ark'] = parent_ark_list
-data.to_csv(path_or_buf=output_file, sep=',', na_rep='', float_format=None, index=False)
+data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
+data = data.drop("Item ARK", axis=1)
+data.insert(7, 'Item ARK', parent_ark_list)
+data.to_csv(path_or_buf=(directory+output_file), sep=',', na_rep='', float_format=None, index=False)
+
 
 for filename in os.listdir(directory):
-    if '.csv' in filename:
+    if '.csv' in filename and filename != 'works.csv':
         file_path = directory + (str(filename))
-        output_file = str(filename).replace('.csv', '') + '_export.csv'
         cursor = csv.DictReader(open(file_path),
             delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         item_ark_list = []
@@ -68,10 +66,10 @@ for filename in os.listdir(directory):
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
 
-        data= pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
-        data['Item Ark'] = item_ark_list
-        data['Parent Ark'] = local_parent_ark_list
-        data.to_csv(path_or_buf=output_file, sep=',', na_rep='', float_format=None, index=False)
-
-        
+        data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
+        data = data.drop("Item ARK", "Parent ARK", axis=1)
+        #data = data.drop("Parent ARK", axis=1)
+        data.insert(6, 'Parent ARK', local_parent_ark_list)
+        data.insert(7, 'Item ARK', item_ark_list)
+        data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
 
