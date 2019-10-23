@@ -67,8 +67,8 @@ for filename in os.listdir(directory):
                     local_parent_ark_list.append(parent_ark)
 
         data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
-        data = data.drop("Item ARK", "Parent ARK", axis=1)
-        #data = data.drop("Parent ARK", axis=1)
+        data = data.drop("Item ARK", axis=1)
+        data = data.drop("Parent ARK", axis=1)
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
