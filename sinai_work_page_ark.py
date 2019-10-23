@@ -56,7 +56,7 @@ for filename in os.listdir(directory):
         item_ark_list = []
         local_parent_ark_list = []
         for row in cursor:
-            if row['Object Type'] == 'Page':
+            if row['Object Type'] == 'ChildWork':
                 source = row['Source']
                 if source in ark_dict.keys():
                     parent_ark = ark_dict[source]
