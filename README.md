@@ -40,7 +40,7 @@ run 'python sinai_work_page_ark.py' in terminal. you will be prompted for:
 3. The ARK shoulder
 4. EZID login credientials
 
-the parent ark input and new item ark will be appended to the last two columns of the output csv file
+the parent ark input and new item ark will be added to the existing columns.
 ```
 
 ## Testing
