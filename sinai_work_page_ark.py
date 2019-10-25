@@ -45,8 +45,6 @@ for row in works_cursor:
         parent_ark = row['Item ARK']
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
-print(len((parent_ark_list)))
-
 
 data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
 data = data.drop("Item ARK", axis=1)
