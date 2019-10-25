@@ -47,7 +47,7 @@ data = data.drop("Item ARK", axis=1)
 data.insert(7, 'Item ARK', parent_ark_list)
 data.to_csv(path_or_buf=(directory+output_file), sep=',', na_rep='', float_format=None, index=False)
 
-
+#loops through files in a directory 
 for filename in os.listdir(directory):
     if '.csv' in filename and filename != 'works.csv':
         file_path = directory + (str(filename))
@@ -55,6 +55,7 @@ for filename in os.listdir(directory):
             delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         item_ark_list = []
         local_parent_ark_list = []
+        print(filename)
         for row in cursor:
             if row['Object Type'] == 'ChildWork':
                 source = row['Source']
@@ -65,6 +66,9 @@ for filename in os.listdir(directory):
                     item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
+                else:
+                    item_ark_list.append('')
+                    local_parent_ark_list.append('')
 
         data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
         data = data.drop("Item ARK", axis=1)
@@ -72,4 +76,3 @@ for filename in os.listdir(directory):
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
-
