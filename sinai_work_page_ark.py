@@ -21,8 +21,8 @@ def create_mappings():
     for s in string:
         mappings_file.write(s)
 
-directory = raw_input('File directory:')
-works_file = raw_input('Path to works.csv:')
+directory = (str(raw_input('File directory:')).strip())+'/'
+works_file = directory+'works.csv'
 ark_shoulder = raw_input('ARK shoulder:')
 ezid_input = raw_input('EZID username and password:')
 ark_dict = {}
@@ -34,13 +34,19 @@ works_cursor = csv.DictReader(open(works_file),
 for row in works_cursor:
 
     altidentifer = row['AltIdentifier.local']
-    if row['Object Type'] == 'Work':
+    if row['Object Type'] == 'Work' and row['Item ARK'] is None:
         create_mappings()
         cmd_ezid = ['python', 'ezid.py', ezid_input, 'mint', ark_shoulder, '@', 'mappings.txt']
         parent_ark = subprocess.Popen(cmd_ezid, stdout=subprocess.PIPE).communicate()[0]
         parent_ark = (str(parent_ark)).replace('success: ', '')
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
+    elif row['Item ARK'] is not None:
+        parent_ark = row['Item ARK']
+        parent_ark_list.append(parent_ark)
+        ark_dict[altidentifer] = parent_ark
+print(len((parent_ark_list)))
+
 
 data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
 data = data.drop("Item ARK", axis=1)
@@ -56,7 +62,9 @@ for filename in os.listdir(directory):
         item_ark_list = []
         local_parent_ark_list = []
         print(filename)
+        index = 2
         for row in cursor:
+            title = row['Title']
             if row['Object Type'] == 'ChildWork':
                 source = row['Source']
                 if source in ark_dict.keys():
@@ -66,9 +74,11 @@ for filename in os.listdir(directory):
                     item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
-                else:
+                elif source not in ark_dict.keys():
+                    print(('Item ARK not minted for page:{} from Manuscript:{} at row {}').format(title, filename, index))
                     item_ark_list.append('')
                     local_parent_ark_list.append('')
+            index +=1
 
         data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
         data = data.drop("Item ARK", axis=1)
@@ -76,3 +86,4 @@ for filename in os.listdir(directory):
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
+
