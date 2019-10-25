@@ -34,14 +34,14 @@ works_cursor = csv.DictReader(open(works_file),
 for row in works_cursor:
 
     altidentifer = row['AltIdentifier.local']
-    if row['Object Type'] == 'Work' and row['Item ARK'] is None:
+    if row['Object Type'] == 'Work' and row['Item ARK']== '':
         create_mappings()
         cmd_ezid = ['python', 'ezid.py', ezid_input, 'mint', ark_shoulder, '@', 'mappings.txt']
         parent_ark = subprocess.Popen(cmd_ezid, stdout=subprocess.PIPE).communicate()[0]
         parent_ark = (str(parent_ark)).replace('success: ', '')
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
-    elif row['Item ARK'] is not None:
+    elif row['Item ARK'] != '':
         parent_ark = row['Item ARK']
         parent_ark_list.append(parent_ark)
         ark_dict[altidentifer] = parent_ark
