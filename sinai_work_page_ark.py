@@ -66,9 +66,6 @@ for filename in os.listdir(directory):
                     item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
-                else:
-                    item_ark_list.append('')
-                    local_parent_ark_list.append('')
 
         data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
         data = data.drop("Item ARK", axis=1)
