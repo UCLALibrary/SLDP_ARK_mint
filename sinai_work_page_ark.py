@@ -59,7 +59,6 @@ for filename in os.listdir(directory):
             delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         item_ark_list = []
         local_parent_ark_list = []
-        print(filename)
         index = 2
         for row in cursor:
             title = row['Title']
