@@ -84,4 +84,3 @@ for filename in os.listdir(directory):
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
-
