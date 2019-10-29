@@ -34,7 +34,7 @@ works_cursor = csv.DictReader(open(works_file),
 for row in works_cursor:
 
     altidentifer = row['AltIdentifier.local']
-    if row['Object Type'] == 'Work' and row['Item ARK']== '':
+    if row['Object Type'] == 'Work' and row['Item ARK'] == '':
         create_mappings()
         cmd_ezid = ['python', 'ezid.py', ezid_input, 'mint', ark_shoulder, '@', 'mappings.txt']
         parent_ark = subprocess.Popen(cmd_ezid, stdout=subprocess.PIPE).communicate()[0]
@@ -52,6 +52,7 @@ data.insert(7, 'Item ARK', parent_ark_list)
 data.to_csv(path_or_buf=(directory+output_file), sep=',', na_rep='', float_format=None, index=False)
 
 #loops through files in a directory 
+check_ark_list = []
 for filename in os.listdir(directory):
     if '.csv' in filename and filename != 'works.csv':
         file_path = directory + (str(filename))
@@ -71,11 +72,13 @@ for filename in os.listdir(directory):
                     item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
+                    check_ark_list.append(parent_ark_list)
 
                 elif source not in ark_dict.keys():
                     print(('Item ARK not minted for page:{} from Manuscript:{} at row {}').format(title, filename, index))
                     item_ark_list.append('')
                     local_parent_ark_list.append('')
+                    check_ark_list.append(parent_ark_list)
             index +=1
             
         data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
@@ -84,3 +87,10 @@ for filename in os.listdir(directory):
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
+"""
+ark_counter = 0
+for ark[ark_counter] in check_ark_list:
+    if ark not in ark_dict.items():
+        print('This manuscript ark is in the page csv but not the work csv: {}'.format(ark))
+ark_counter+=1
+"""
