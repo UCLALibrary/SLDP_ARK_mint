@@ -72,7 +72,7 @@ for filename in os.listdir(directory):
         index = 2
         for row in cursor:
             title = row['Title']
-            if row['Object Type'] == 'ChildWork':
+            if row['Object Type'] == 'Page':
                 source = row['Source']
                 if source in ark_dict.keys():
                     parent_ark = clean(ark_dict[source])
