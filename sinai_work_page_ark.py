@@ -77,8 +77,11 @@ for filename in os.listdir(directory):
                 if source in ark_dict.keys():
                     parent_ark = clean(ark_dict[source])
                     create_noid_yml(parent_ark)
-                    cmd = ['noid', '-f', 'Noid_test.yml']
-                    item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+                    if row['Item ARK'] == '':
+                        cmd = ['noid', '-f', 'Noid_test.yml']
+                        item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+                    elif row['Item ARK'] != '':
+                        item_ark = row['Item ARK']
                     item_ark = clean(item_ark)
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
