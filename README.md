@@ -9,23 +9,22 @@ NOID-mint Python Package
 	$ cd manuscript_arks
 	
 3. Clone the github repo above into that directory
-	$ git clone https://github.com/aprigge/NOID-mint
+	$ git clone https://github.com/UCLALibrary/SLDP_ARK_mint
 	
-4. Use pip2 to create a virtual environment
-	$ pip2 install virtualenv
-	$ virtualenv venv
+4. Create a virtual environment
+	$ python3 -m venv ENV
 
 5. Activate the virtual environment
-	$ source venv/bin/activate
+	$ source ENV/bin/activate
 
-6. Confirm the python version is 2.7 by running 
+6. Confirm the python version is 3.x by running 
 	$ python --version
 	
 7. Navigate down into the NOID-mint directory
 	$ cd NOID-mint
 
 8. Install the requirements
-	$ pip2 install -r requirements.txt
+	$ pip install -r requirements.txt
 
 9. Setup the noid script
 	Run $ python setup.py install

@@ -25,10 +25,10 @@ class PynoidTests(unittest.TestCase):
         self.assertTrue(noid.startswith(SHORT))
 
     def test_mint_ns(self):
-        ns = range(10)
+        ns = list(range(10))
         for n in ns:
             self.assertEqual(mint('d', n), DIGIT[n])
-        ns = range(29)
+        ns = list(range(29))
         for n in ns:
             self.assertEqual(mint('e', n), XDIGIT[n])
 
