@@ -39,14 +39,14 @@ def find_works_file(directory):
 
 
 
-directory = (str(raw_input('File directory:')).strip())+'/'
+directory = input('File directory: ')
 works_filename = find_works_file(directory)
 if works_filename is None:
     print('Works file not found. Aborting')
     sys.exit(1)
 works_file = os.path.join(directory, works_filename)
-ark_shoulder = raw_input('ARK shoulder:')
-ezid_input = raw_input('EZID username and password:')
+ark_shoulder = input('ARK shoulder: ')
+ezid_input = input('EZID username and password: ')
 ark_dict = {}
 parent_ark_list = []
 output_file = works_file
