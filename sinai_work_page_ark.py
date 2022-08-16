@@ -10,31 +10,42 @@ def clean(dirty):
     '''
     return dirty.replace('\r', '').replace('\n', '')
 
-#creates a noid format file that suplies the parent ark for the NOID to be appended to
 
 def create_noid_yml(parent_ark):
-
+    '''
+    creates a noid format file that suplies the parent ark for the NOID to be appended to
+    '''
     noid_file = open("Noid_test.yml", "w+")
     string = ['template: eeddeede \n',('scheme: ' + str(parent_ark[0:11])), ('\nnaa: ' + str(parent_ark[11:]))]
     for s in string:
         noid_file.write(s)
 
-#creates a mappings file that provides metadata to EZID
-def create_mappings():
 
+def create_mappings():
+    '''
+    creates a mappings file that provides metadata to EZID
+    '''
     title = row['Title']
     mappings_file = open("mappings.txt", "w+")
     string = 'erc.who: UCLA Library', ('\nerc.what: '+str(title))
     for s in string:
         mappings_file.write(s)
 
+
+def find_works_file(directory):
+    for filename in os.listdir(directory):
+        if filename.startswith('works') and filename.endswith('.csv'):
+            return filename
+
+
+
 directory = (str(raw_input('File directory:')).strip())+'/'
-works_file = directory+'works.csv'
+works_file = os.path.join(directory, find_works_file(directory))
 ark_shoulder = raw_input('ARK shoulder:')
 ezid_input = raw_input('EZID username and password:')
 ark_dict = {}
 parent_ark_list = []
-output_file = 'works.csv'
+output_file = works_file
 works_cursor = csv.DictReader(open(works_file),
     delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
@@ -63,7 +74,7 @@ data.to_csv(path_or_buf=(directory+output_file), sep=',', na_rep='', float_forma
 check_ark_list = []
 for filename in os.listdir(directory):
     print(filename)
-    if '.csv' in filename and filename != 'works.csv':
+    if filename.endswith('.csv') and not filename.startswith('works'):
         file_path = directory + (str(filename))
         cursor = csv.DictReader(open(file_path),
             delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
@@ -100,10 +111,3 @@ for filename in os.listdir(directory):
         data.insert(6, 'Parent ARK', local_parent_ark_list)
         data.insert(7, 'Item ARK', item_ark_list)
         data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
-"""
-ark_counter = 0
-for ark[ark_counter] in check_ark_list:
-    if ark not in ark_dict.items():
-        print('This manuscript ark is in the page csv but not the work csv: {}'.format(ark))
-ark_counter+=1
-"""
