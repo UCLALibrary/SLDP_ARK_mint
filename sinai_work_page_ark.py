@@ -40,7 +40,11 @@ def find_works_file(directory):
 
 
 directory = (str(raw_input('File directory:')).strip())+'/'
-works_file = os.path.join(directory, find_works_file(directory))
+works_filename = find_works_file(directory)
+if works_filename is None:
+    print('Works file not found. Aborting')
+    sys.exit(1)
+works_file = os.path.join(directory, works_filename)
 ark_shoulder = raw_input('ARK shoulder:')
 ezid_input = raw_input('EZID username and password:')
 ark_dict = {}
@@ -50,21 +54,20 @@ works_cursor = csv.DictReader(open(works_file),
     delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
 for row in works_cursor:
-
-    altidentifer = row['AltIdentifier.local']
+    shelfmark = row['Shelfmark']
     if row['Object Type'] == 'Work' and row['Item ARK'] == '':
         create_mappings()
         cmd_ezid = ['python', 'ezid.py', ezid_input, 'mint', ark_shoulder, '@', 'mappings.txt']
         parent_ark = subprocess.Popen(cmd_ezid, stdout=subprocess.PIPE).communicate()[0]
         parent_ark = clean(str(parent_ark)).replace('success: ', '')
         parent_ark_list.append(parent_ark)
-        ark_dict[altidentifer] = parent_ark
+        ark_dict[shelfmark] = parent_ark
     if row['Object Type'] == '':
     	parent_ark_list.append('')
     elif row['Item ARK'] != '':
         parent_ark = row['Item ARK']
         parent_ark_list.append(parent_ark)
-        ark_dict[altidentifer] = parent_ark
+        ark_dict[shelfmark] = parent_ark
 data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
 data = data.drop("Item ARK", axis=1)
 data.insert(7, 'Item ARK', parent_ark_list)
