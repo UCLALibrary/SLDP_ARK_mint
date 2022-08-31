@@ -1,35 +1,41 @@
 import csv
 import os
-import subprocess
+from subprocess import run
 import pandas as pd
 
 
-def clean(dirty):
-    '''
-    Returns a cleaned string, stripped of all newlines and carriage returns.
-    '''
-    return dirty.replace('\r', '').replace('\n', '')
+NOID_TEMPLATE = 'eeddeede'
+NOID_YML = 'noid.yml'
+ERC_WHO = 'UCLA Library'
+MAPPINGS = 'mappings.txt'
+
+
+def get_session_id():
+    username = input('EZID username: ')
+    password = input('EZID password: ')
+    cmd = ['python', 'ezid3.py', f'{username}:{password}', 'login']
+    response = run(cmd, capture_output=True)
+    return response.stdout.split()[4][2:-1].decode()
+
+
+def logout(session):
+    cmd = ['python', 'ezid3.py', session, 'logout']
+    response = run(cmd, capture_output=True)
+    print(response.stdout)
 
 
 def create_noid_yml(parent_ark):
-    '''
-    creates a noid format file that suplies the parent ark for the NOID to be appended to
-    '''
-    noid_file = open("Noid_test.yml", "w+")
-    string = ['template: eeddeede \n',('scheme: ' + str(parent_ark[0:11])), ('\nnaa: ' + str(parent_ark[11:]))]
-    for s in string:
-        noid_file.write(s)
+    scheme = parent_ark[0:11]
+    naa = parent_ark[11:]
+    text = f'template: {NOID_TEMPLATE}\nscheme: {scheme}\nnaa: {naa}'
+    with open(NOID_YML, 'w+') as noid_yml:
+        noid_yml.write(text)
 
 
-def create_mappings():
-    '''
-    creates a mappings file that provides metadata to EZID
-    '''
-    title = row['Title']
-    mappings_file = open("mappings.txt", "w+")
-    string = 'erc.who: UCLA Library', ('\nerc.what: '+str(title))
-    for s in string:
-        mappings_file.write(s)
+def create_mappings(title):
+    text = f'erc.who: {ERC_WHO}\nerc.what: {title}'
+    with open(MAPPINGS, 'w+') as mappings_file:
+        mappings_file.write(text)
 
 
 def find_works_file(directory):
@@ -38,49 +44,47 @@ def find_works_file(directory):
             return filename
 
 
+def find_nonworks_csvs(directory):
+    return [f for f in os.listdir(directory) if f.endswith('csv') and not f.startswith('works')]
 
-directory = input('File directory: ')
-works_filename = find_works_file(directory)
-if works_filename is None:
-    print('Works file not found. Aborting')
-    sys.exit(1)
-works_file = os.path.join(directory, works_filename)
-ark_shoulder = input('ARK shoulder: ')
-ezid_input = input('EZID username and password: ')
-ark_dict = {}
-parent_ark_list = []
-output_file = works_file
-works_cursor = csv.DictReader(open(works_file),
-    delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
-for row in works_cursor:
-    shelfmark = row['Shelfmark']
-    if row['Object Type'] == 'Work' and row['Item ARK'] == '':
-        create_mappings()
-        cmd_ezid = ['python', 'ezid.py', ezid_input, 'mint', ark_shoulder, '@', 'mappings.txt']
-        parent_ark = subprocess.Popen(cmd_ezid, stdout=subprocess.PIPE).communicate()[0]
-        parent_ark = clean(str(parent_ark)).replace('success: ', '')
-        parent_ark_list.append(parent_ark)
-        ark_dict[shelfmark] = parent_ark
-    if row['Object Type'] == '':
-    	parent_ark_list.append('')
-    elif row['Item ARK'] != '':
-        parent_ark = row['Item ARK']
-        parent_ark_list.append(parent_ark)
-        ark_dict[shelfmark] = parent_ark
-data= pd.read_csv(works_file, sep=',', delimiter=None, header='infer')
-data = data.drop("Item ARK", axis=1)
-data.insert(7, 'Item ARK', parent_ark_list)
-data.to_csv(path_or_buf=(directory+output_file), sep=',', na_rep='', float_format=None, index=False)
+def mint_ark(session, shoulder, title=None, noid=False, parent_ark=None):
+    if noid is True:
+        create_noid_yml(parent_ark)
+        cmd = ['noid', '-f', NOID_YML]
+    else:
+        create_mappings(title)
+        cmd = ['python', 'ezid3.py', session, 'mint', shoulder, '@', 'mappings.txt']
+    ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+    return ark.strip().replace('success: ', '')
 
-#loops through files in a directory 
-check_ark_list = []
-for filename in os.listdir(directory):
-    print(filename)
-    if filename.endswith('.csv') and not filename.startswith('works'):
-        file_path = directory + (str(filename))
-        cursor = csv.DictReader(open(file_path),
-            delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+
+def process_works_file(path, session, shoulder):
+    ark_dict = {}
+    parent_ark_list = []
+    with open(path) as works_file:
+        rows = csv.DictReader(works_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+        for row in rows:
+            shelfmark = row['Shelfmark']
+            if row['Object Type'] == 'Work' and row['Item ARK'] == '':
+                ark = mint_ark(session, shoulder, title=shelfmark)
+                ark_dict[shelfmark] = ark
+                parent_ark_list.append(ark)
+            elif row['Object Type'] == '':
+                parent_ark_list.append('')
+            elif row['Item ARK'] != '':
+                ark_dict[shelfmark] = row['Item ARK']
+                parent_ark_list.append(row['Item ARK'])
+    data = pd.read_csv(path, sep=',', delimiter=None, header='infer')
+    data = data.drop('Item ARK', axis=1)
+    data.insert(7, 'Item ARK', parent_ark_list)
+    data.to_csv(path_or_buf=(path), sep=',', na_rep='', float_format=None, index=False)
+    return ark_dict
+
+
+def process_nonworks_csv(filepath, ark_dict, session, shoulder):
+    with open(filepath) as csv_file:
+        cursor = csv.DictReader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         item_ark_list = []
         local_parent_ark_list = []
         index = 2
@@ -89,28 +93,52 @@ for filename in os.listdir(directory):
             if row['Object Type'] == 'Page':
                 source = row['Source']
                 if source in ark_dict.keys():
-                    parent_ark = clean(ark_dict[source])
-                    create_noid_yml(parent_ark)
+                    parent_ark = ark_dict[source].strip()
                     if row['Item ARK'] == '':
-                        cmd = ['noid', '-f', 'Noid_test.yml']
-                        item_ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-                    elif row['Item ARK'] != '':
+                        item_ark = mint_ark(session, shoulder, noid=True, parent_ark=parent_ark)
+                    else:
                         item_ark = row['Item ARK']
-                    item_ark = clean(item_ark)
+                    item_ark = item_ark.strip()
                     item_ark_list.append(item_ark)
                     local_parent_ark_list.append(parent_ark)
-                    check_ark_list.append(parent_ark_list)
-
                 elif source not in ark_dict.keys():
                     print(('Item ARK not minted for page:{} from Manuscript:{} at row {}').format(title, filename, index))
                     item_ark_list.append('')
                     local_parent_ark_list.append('')
-                    check_ark_list.append(parent_ark_list)
             index +=1
-            
-        data = pd.read_csv(file_path, sep=',', delimiter=None, header='infer')
-        data = data.drop("Item ARK", axis=1)
-        data = data.drop("Parent ARK", axis=1)
-        data.insert(6, 'Parent ARK', local_parent_ark_list)
-        data.insert(7, 'Item ARK', item_ark_list)
-        data.to_csv(path_or_buf=(directory+filename), sep=',', na_rep='', float_format=None, index=False)
+    data = pd.read_csv(filepath, sep=',', delimiter=None, header='infer')
+    data = data.drop("Item ARK", axis=1)
+    data = data.drop("Parent ARK", axis=1)
+    data.insert(6, 'Parent ARK', local_parent_ark_list)
+    data.insert(7, 'Item ARK', item_ark_list)
+    data.to_csv(path_or_buf=(filepath), sep=',', na_rep='', float_format=None, index=False)
+
+
+def cleanup():
+    for f in (NOID_YML, MAPPINGS):
+        if os.path.exists(f):
+            os.remove(f)
+
+
+def main():
+    directory = input('File directory: ')
+    works_filename = find_works_file(directory)
+    if works_filename is None:
+        print('Works file not found. Aborting')
+        sys.exit(1)
+    shoulder = input('ARK shoulder: ')
+    session = get_session_id(username, password)
+    works_path = os.path.join(directory, works_filename)
+    try:
+        ark_dict = process_works_file(works_path, session, shoulder)
+        for filename in find_nonworks_csvs(directory):
+            path = os.path.join(directory, filename)
+            process_nonworks_csv(path, ark_dict, session, shoulder)
+    except Exception as e:
+        print(e)
+    finally:
+        cleanup()
+
+
+if __name__ == "__main__":
+    main()
