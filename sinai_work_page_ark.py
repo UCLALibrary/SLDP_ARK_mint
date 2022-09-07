@@ -1,6 +1,6 @@
 import csv
 import os
-from subprocess import run
+import subprocess
 import pandas as pd
 
 
@@ -14,14 +14,13 @@ def get_session_id():
     username = input('EZID username: ')
     password = input('EZID password: ')
     cmd = ['python', 'ezid3.py', f'{username}:{password}', 'login']
-    response = run(cmd, capture_output=True)
+    response = subprocess.run(cmd, capture_output=True)
     return response.stdout.split()[4][2:-1].decode()
 
 
 def logout(session):
     cmd = ['python', 'ezid3.py', session, 'logout']
-    response = run(cmd, capture_output=True)
-    print(response.stdout)
+    response = subprocess.run(cmd, capture_output=True)
 
 
 def create_noid_yml(parent_ark):
@@ -56,8 +55,7 @@ def mint_ark(session, shoulder, title=None, noid=False, parent_ark=None):
         create_mappings(title)
         cmd = ['python', 'ezid3.py', session, 'mint', shoulder, '@', 'mappings.txt']
     ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-    return ark.strip().replace('success: ', '')
-
+    return ark.decode("utf-8").strip().replace('success: ', '')[2:-1]
 
 def process_works_file(path, session, shoulder):
     ark_dict = {}
@@ -127,7 +125,7 @@ def main():
         print('Works file not found. Aborting')
         sys.exit(1)
     shoulder = input('ARK shoulder: ')
-    session = get_session_id(username, password)
+    session = get_session_id()
     works_path = os.path.join(directory, works_filename)
     try:
         ark_dict = process_works_file(works_path, session, shoulder)
@@ -137,6 +135,7 @@ def main():
     except Exception as e:
         print(e)
     finally:
+        logout(session)
         cleanup()
 
 
