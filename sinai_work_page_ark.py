@@ -55,7 +55,7 @@ def mint_ark(session, shoulder, title=None, noid=False, parent_ark=None):
         create_mappings(title)
         cmd = ['python', 'ezid3.py', session, 'mint', shoulder, '@', 'mappings.txt']
     ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-    return ark.decode("utf-8").strip().replace('success: ', '')[2:-1]
+    return ark.decode("utf-8").strip().replace('success: ', '')
 
 def process_works_file(path, session, shoulder):
     ark_dict = {}
@@ -65,7 +65,7 @@ def process_works_file(path, session, shoulder):
         for row in rows:
             shelfmark = row['Shelfmark']
             if row['Object Type'] == 'Work' and row['Item ARK'] == '':
-                ark = mint_ark(session, shoulder, title=shelfmark)
+                ark = mint_ark(session, shoulder, title=shelfmark)[2:-1]
                 ark_dict[shelfmark] = ark
                 parent_ark_list.append(ark)
             elif row['Object Type'] == '':
