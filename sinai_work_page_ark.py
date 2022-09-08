@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 import subprocess
 import pandas as pd
 
@@ -15,11 +16,12 @@ def get_session_id():
     password = input('EZID password: ')
     cmd = ['python', 'ezid3.py', f'{username}:{password}', 'login']
     response = subprocess.run(cmd, capture_output=True)
+    #from response, take session ID (4th element) and strip extra bytestring quote characters
     return response.stdout.split()[4][2:-1].decode()
 
 
-def logout(session):
-    cmd = ['python', 'ezid3.py', session, 'logout']
+def logout(session_id):
+    cmd = ['python', 'ezid3.py', session_id, 'logout']
     response = subprocess.run(cmd, capture_output=True)
 
 
@@ -47,17 +49,17 @@ def find_nonworks_csvs(directory):
     return [f for f in os.listdir(directory) if f.endswith('csv') and not f.startswith('works')]
 
 
-def mint_ark(session, shoulder, title=None, noid=False, parent_ark=None):
+def mint_ark(session_id, shoulder, title=None, noid=False, parent_ark=None):
     if noid is True:
         create_noid_yml(parent_ark)
         cmd = ['noid', '-f', NOID_YML]
     else:
         create_mappings(title)
-        cmd = ['python', 'ezid3.py', session, 'mint', shoulder, '@', 'mappings.txt']
+        cmd = ['python', 'ezid3.py', session_id, 'mint', shoulder, '@', 'mappings.txt']
     ark = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
     return ark.decode("utf-8").strip().replace('success: ', '')
 
-def process_works_file(path, session, shoulder):
+def process_works_file(path, session_id, shoulder):
     ark_dict = {}
     parent_ark_list = []
     with open(path) as works_file:
@@ -65,7 +67,7 @@ def process_works_file(path, session, shoulder):
         for row in rows:
             shelfmark = row['Shelfmark']
             if row['Object Type'] == 'Work' and row['Item ARK'] == '':
-                ark = mint_ark(session, shoulder, title=shelfmark)[2:-1]
+                ark = mint_ark(session_id, shoulder, title=shelfmark)[2:-1]
                 ark_dict[shelfmark] = ark
                 parent_ark_list.append(ark)
             elif row['Object Type'] == '':
@@ -80,7 +82,7 @@ def process_works_file(path, session, shoulder):
     return ark_dict
 
 
-def process_nonworks_csv(filepath, ark_dict, session, shoulder):
+def process_nonworks_csv(filepath, ark_dict, session_id, shoulder):
     with open(filepath) as csv_file:
         cursor = csv.DictReader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         item_ark_list = []
@@ -93,7 +95,7 @@ def process_nonworks_csv(filepath, ark_dict, session, shoulder):
                 if source in ark_dict.keys():
                     parent_ark = ark_dict[source].strip()
                     if row['Item ARK'] == '':
-                        item_ark = mint_ark(session, shoulder, noid=True, parent_ark=parent_ark)
+                        item_ark = mint_ark(session_id, shoulder, noid=True, parent_ark=parent_ark)
                     else:
                         item_ark = row['Item ARK']
                     item_ark = item_ark.strip()
@@ -125,17 +127,21 @@ def main():
         print('Works file not found. Aborting')
         sys.exit(1)
     shoulder = input('ARK shoulder: ')
-    session = get_session_id()
+    session_id = get_session_id()
     works_path = os.path.join(directory, works_filename)
     try:
-        ark_dict = process_works_file(works_path, session, shoulder)
+        ark_dict = process_works_file(works_path, session_id, shoulder)
         for filename in find_nonworks_csvs(directory):
             path = os.path.join(directory, filename)
-            process_nonworks_csv(path, ark_dict, session, shoulder)
+            process_nonworks_csv(path, ark_dict, session_id, shoulder)
     except Exception as e:
+        #Possible exceptions caught (but not handled):
+        #HTTPErrors from EZID requests,
+        #OSErrors from missing or incorrect csv files, and
+        #Exceptions raised by subprocess module 
         print(e)
     finally:
-        logout(session)
+        logout(session_id)
         cleanup()
 
 

@@ -10,20 +10,23 @@ NOID-mint Python Package
 	
 3. Clone the github repo above into that directory
 	$ git clone https://github.com/UCLALibrary/SLDP_ARK_mint
+
+4. Navigate into the new SDLP_ARK_mint directory
+	$ cd SLDP_ARK_mint
 	
-4. Create a virtual environment
+5. Create a virtual environment
 	$ python3 -m venv ENV
 
-5. Activate the virtual environment
+6. Activate the virtual environment
 	$ source ENV/bin/activate
 
-6. Confirm the python version is 3.x by running 
+7. Confirm the python version is 3.x by running 
 	$ python --version
 
-7. Install the requirements
+8. Install the requirements
 	$ pip install -r requirements.txt
 
-8. Setup the noid script
+9. Setup the noid script
 	Run $ python setup.py install
 ```
 
