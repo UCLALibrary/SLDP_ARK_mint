@@ -121,7 +121,7 @@ def cleanup():
 
 
 def main():
-    directory = input('File directory: ')
+    directory = input('File directory: ').strip()
     works_filename = find_works_file(directory)
     if works_filename is None:
         print('Works file not found. Aborting')
