@@ -9,23 +9,22 @@ NOID-mint Python Package
 	$ cd manuscript_arks
 	
 3. Clone the github repo above into that directory
-	$ git clone https://github.com/aprigge/NOID-mint
+	$ git clone https://github.com/UCLALibrary/SLDP_ARK_mint
+
+4. Navigate into the new SDLP_ARK_mint directory
+	$ cd SLDP_ARK_mint
 	
-4. Use pip2 to create a virtual environment
-	$ pip2 install virtualenv
-	$ virtualenv venv
+5. Create a virtual environment
+	$ python3 -m venv ENV
 
-5. Activate the virtual environment
-	$ source venv/bin/activate
+6. Activate the virtual environment
+	$ source ENV/bin/activate
 
-6. Confirm the python version is 2.7 by running 
+7. Confirm the python version is 3.x by running 
 	$ python --version
-	
-7. Navigate down into the NOID-mint directory
-	$ cd NOID-mint
 
 8. Install the requirements
-	$ pip2 install -r requirements.txt
+	$ pip install -r requirements.txt
 
 9. Setup the noid script
 	Run $ python setup.py install
@@ -35,10 +34,9 @@ NOID-mint Python Package
 * Generate noid
 ```
 run 'python sinai_work_page_ark.py' in terminal. you will be prompted for:
-1. The directory name for the files
-2. The path to the works.csv file
-3. The ARK shoulder
-4. EZID login credientials
+1. The directory name for the files, including the works.csv file
+2. The ARK shoulder
+3. EZID login credientials
 
 the parent ark input and new item ark will be added to the existing columns.
 ```

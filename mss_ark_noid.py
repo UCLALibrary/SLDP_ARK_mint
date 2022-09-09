@@ -62,9 +62,9 @@ def call_ezid(file_path):
 #input from the command line to supply directory of files,
 # the EZID credientials, and the preferred ARK shoulder
 
-directory = raw_input('File directory:')
-ezid_input = raw_input('EZID username and password:')
-ark_shoulder = raw_input('ARK shoulder:')
+directory = input('File directory:')
+ezid_input = input('EZID username and password:')
+ark_shoulder = input('ARK shoulder:')
 				
 
 #runs through the functions for all csvs in the directory supplied			

@@ -155,4 +155,4 @@ class NamespaceError(Exception):
 
 if __name__ == '__main__':
 
-    print(mint(template='eeddeede', n=None, scheme='ark:/', naa='53696'))
+    print((mint(template='eeddeede', n=None, scheme='ark:/', naa='53696')))
